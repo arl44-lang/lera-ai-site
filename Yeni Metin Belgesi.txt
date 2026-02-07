@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Lera AI Chat</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f0f0f0; }
+    h1 { color: #333; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; background: #fff; margin-bottom: 10px; }
+    input, button { padding: 10px; font-size: 16px; }
+    input { width: 70%; }
+    button { width: 25%; }
+    p { margin: 5px 0; }
+    .user { color: blue; }
+    .bot { color: green; }
+</style>
+</head>
+<body>
+
+<h1>Lera AI Chat</h1>
+
+<div id="chat"></div>
+
+<input type="text" id="message" placeholder="Mesajınızı yazın">
+<button onclick="sendMessage()">Gönder</button>
+
+<script>
+async function sendMessage() {
+    const messageInput = document.getElementById("message");
+    const msg = messageInput.value.trim();
+    if(!msg) return;
+
+    const chatDiv = document.getElementById("chat");
+    chatDiv.innerHTML += `<p class="user"><b>Sen:</b> ${msg}</p>`;
+    messageInput.value = "";
+
+    // JWT Token sor
+    const token = prompt("JWT Token girin:");
+
+    try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: msg })
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+            chatDiv.innerHTML += `<p class="bot"><b>Lera:</b> ${data.reply}</p>`;
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        } else {
+            chatDiv.innerHTML += `<p class="bot"><b>Hata:</b> ${data.detail || JSON.stringify(data)}</p>`;
+        }
+
+    } catch (err) {
+        chatDiv.innerHTML += `<p class="bot"><b>Hata:</b> ${err}</p>`;
+    }
+}
+</script>
+
+</body>
+</html>
